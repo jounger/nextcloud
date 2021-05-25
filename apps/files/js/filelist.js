@@ -3202,6 +3202,9 @@
 			if (file.length === 1) {
 				_.defer(function() {
 					this.showDetailsView(file[0]);
+					// Trigger a click event for the file.
+					const fileElement = this.findFileEl(file[0])[0]
+					$(fileElement).find('a.name').click()
 				}.bind(this));
 			}
 			this.highlightFiles(file, function($tr) {
