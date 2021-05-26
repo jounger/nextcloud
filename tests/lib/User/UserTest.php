@@ -504,14 +504,15 @@ class UserTest extends TestCase {
 			->method('deleteUser')
 			->willReturn($result);
 		$emitter = new PublicEmitter();
-		$user = new User('foo', $backend, $this->dispatcher, $emitter);
+		$userId = uniqid('foo', true);
+		$user = new User($userId, $backend, $this->dispatcher, $emitter);
 
 		/**
 		 * @param User $user
 		 */
-		$hook = function ($user) use ($test, &$hooksCalled) {
+		$hook = function ($user) use ($test, $userId, &$hooksCalled) {
 			$hooksCalled++;
-			$test->assertEquals('foo', $user->getUID());
+			$test->assertEquals($userId, $user->getUID());
 		};
 
 		$emitter->listen('\OC\User', 'preDelete', $hook);

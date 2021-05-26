@@ -36,6 +36,8 @@ class FileCacheTest extends TestCache {
 	 * @var string
 	 * */
 	private $user;
+	/** @var string */
+	private $userId;
 	/**
 	 * @var string
 	 * */
@@ -48,10 +50,6 @@ class FileCacheTest extends TestCache {
 	 * @var \OC\Files\View
 	 * */
 	private $rootView;
-
-	public function skip() {
-		//$this->skipUnless(OC_User::isLoggedIn());
-	}
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -73,10 +71,11 @@ class FileCacheTest extends TestCache {
 		\OC_User::useBackend(new \Test\Util\User\Dummy());
 
 		//login
-		\OC::$server->getUserManager()->createUser('test', 'test');
+		$this->userId = 'test' . uniqid('', true);
+		\OC::$server->getUserManager()->createUser($this->userId, 'test');
 
 		$this->user = \OC_User::getUser();
-		\OC_User::setUserId('test');
+		\OC_User::setUserId($this->userId);
 
 		//set up the users dir
 		$this->rootView = new \OC\Files\View('');
@@ -102,7 +101,7 @@ class FileCacheTest extends TestCache {
 		}
 
 		//tear down the users dir aswell
-		$user = \OC::$server->getUserManager()->get('test');
+		$user = \OC::$server->getUserManager()->get($this->userId);
 		$user->delete();
 
 		// Restore the original mount point
