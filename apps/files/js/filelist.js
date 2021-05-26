@@ -409,6 +409,20 @@
 			this.$container.on('scroll', _.bind(this._onScroll, this));
 
 			if (options.scrollTo) {
+				// Trigger default action for the item targeted by scrollTo.
+				const fileInfo = JSON.parse(atob($('#initial-state-files-fileInfo').val()))
+				var spec = this.fileActions.getDefaultFileAction(fileInfo.mimetype, 'file', fileInfo.permissions)
+				if (spec && spec.action) {
+					spec.action(fileInfo.name, {
+						// $file: $tr,
+						fileList: this,
+						fileActions: this.fileActions,
+						dir: this.getCurrentDirectory()
+					});
+				}
+				// Open de sidebar.
+				OCA.Files.Sidebar.open(fileInfo.path)
+
 				this.$fileList.one('updated', function() {
 					self.scrollTo(options.scrollTo);
 				});
@@ -3202,9 +3216,6 @@
 			if (file.length === 1) {
 				_.defer(function() {
 					this.showDetailsView(file[0]);
-					// Trigger a click event for the file.
-					const fileElement = this.findFileEl(file[0])[0]
-					$(fileElement).find('a.name').click()
 				}.bind(this));
 			}
 			this.highlightFiles(file, function($tr) {

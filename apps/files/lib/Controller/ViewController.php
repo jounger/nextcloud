@@ -56,6 +56,7 @@ use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUserSession;
 use OCP\Share\IManager;
+use OC\Files\View;
 
 /**
  * Class ViewController
@@ -89,6 +90,8 @@ class ViewController extends Controller {
 	private $templateManager;
 	/** @var IManager */
 	private $shareManager;
+	/** @var View */
+	protected $fileView;
 
 	public function __construct(string $appName,
 		IRequest $request,
@@ -102,7 +105,8 @@ class ViewController extends Controller {
 		Helper $activityHelper,
 		IInitialState $initialState,
 		ITemplateManager $templateManager,
-		IManager $shareManager
+		IManager $shareManager,
+		View $view
 	) {
 		parent::__construct($appName, $request);
 		$this->appName = $appName;
@@ -118,6 +122,7 @@ class ViewController extends Controller {
 		$this->initialState = $initialState;
 		$this->templateManager = $templateManager;
 		$this->shareManager = $shareManager;
+		$this->fileView = $view;
 	}
 
 	/**
@@ -181,7 +186,7 @@ class ViewController extends Controller {
 	 * @return TemplateResponse|RedirectResponse
 	 * @throws NotFoundException
 	 */
-	public function index($dir = '', $view = '', $fileid = null, $fileNotFound = false) {
+	public function index($dir = '', $view = '', $fileid = null, $fileNotFound = false, $scrollto = null) {
 		if ($fileid !== null) {
 			try {
 				return $this->redirectToFile($fileid);
@@ -329,6 +334,15 @@ class ViewController extends Controller {
 		$policy = new ContentSecurityPolicy();
 		$policy->addAllowedFrameDomain('\'self\'');
 		$response->setContentSecurityPolicy($policy);
+
+		if ($scrollto !== null) {
+			$uid = $this->userSession->getUser()->getUID();
+			$root = $this->rootFolder->getUserFolder($uid);
+			$path = $root->getFullPath($dir.'/'.$scrollto);
+			$this->initialState->provideInitialState(
+				'fileInfo', $this->fileView->getFileInfo($path)->getData()->getData()
+			);
+		}
 
 		return $response;
 	}
